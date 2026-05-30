@@ -51,29 +51,11 @@
     figcaption {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 12px;
       color: #2d5454;
       font-size: 15px;
       line-height: 1.35;
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 999px;
-      padding: 12px 18px;
-      min-width: 132px;
-      background: #165c5c;
-      color: white;
-      font: inherit;
-      font-weight: 650;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(22, 92, 92, 0.24);
-    }
-
-    button:active {
-      transform: translateY(1px);
     }
 
     @media (max-width: 640px) {
@@ -82,13 +64,7 @@
       }
 
       figcaption {
-        align-items: stretch;
-        flex-direction: column;
         font-size: 14px;
-      }
-
-      button {
-        width: 100%;
       }
     }
   </style>
@@ -99,33 +75,42 @@
       <img src="../qr-assets/xi-cv-image-2026-05-28.jpg" alt="Foxton Beach">
       <figcaption>
         <span>Foxton Beach</span>
-        <button id="soundButton" type="button">Play sound</button>
       </figcaption>
     </figure>
   </main>
 
-  <audio id="ambientAudio" src="./foxton-beach-ambient.mp3" loop preload="auto"></audio>
+  <audio id="ambientAudio" src="./foxton-beach-ambient.mp3" autoplay loop preload="auto" playsinline></audio>
 
   <script>
     const audio = document.getElementById("ambientAudio");
-    const button = document.getElementById("soundButton");
 
     audio.volume = 0.72;
 
-    async function toggleSound() {
-      if (audio.paused) {
-        await audio.play();
-        button.textContent = "Pause sound";
-      } else {
-        audio.pause();
-        button.textContent = "Play sound";
-      }
+    async function playAmbient() {
+      audio.muted = false;
+      audio.currentTime = audio.currentTime || 0;
+      await audio.play();
     }
 
-    button.addEventListener("click", () => {
-      toggleSound().catch(() => {
-        button.textContent = "Tap to play";
-      });
+    function tryPlaySoon() {
+      playAmbient().catch(() => {});
+    }
+
+    window.addEventListener("load", tryPlaySoon, { once: true });
+    document.addEventListener("DOMContentLoaded", tryPlaySoon, { once: true });
+    document.addEventListener("WeixinJSBridgeReady", tryPlaySoon, { once: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && audio.paused) {
+        tryPlaySoon();
+      }
+    });
+
+    [250, 800, 1600, 3000].forEach((delay) => {
+      window.setTimeout(() => {
+        if (audio.paused) {
+          tryPlaySoon();
+        }
+      }, delay);
     });
   </script>
 </body>
