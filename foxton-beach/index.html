@@ -50,12 +50,38 @@
 
     figcaption {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
       gap: 12px;
       color: #2d5454;
       font-size: 15px;
       line-height: 1.35;
+    }
+
+    .sound-prompt {
+      display: flex;
+      justify-content: center;
+    }
+
+    .sound-prompt[hidden] {
+      display: none;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: #17485a;
+      color: #ffffff;
+      font: inherit;
+      font-weight: 600;
+      box-shadow: 0 8px 22px rgba(23, 72, 90, 0.22);
+    }
+
+    button:active {
+      transform: translateY(1px);
     }
 
     @media (max-width: 640px) {
@@ -75,6 +101,9 @@
       <img src="../qr-assets/xi-cv-image-2026-05-28.jpg" alt="Foxton Beach">
       <figcaption>
         <span>Foxton Beach</span>
+        <span id="soundPrompt" class="sound-prompt" hidden>
+          <button id="soundButton" type="button">Play sound</button>
+        </span>
       </figcaption>
     </figure>
   </main>
@@ -83,6 +112,8 @@
 
   <script>
     const audio = document.getElementById("ambientAudio");
+    const prompt = document.getElementById("soundPrompt");
+    const button = document.getElementById("soundButton");
 
     audio.volume = 0.72;
 
@@ -90,11 +121,25 @@
       audio.muted = false;
       audio.currentTime = audio.currentTime || 0;
       await audio.play();
+      prompt.hidden = true;
     }
 
     function tryPlaySoon() {
-      playAmbient().catch(() => {});
+      playAmbient().catch(() => {
+        prompt.hidden = false;
+      });
     }
+
+    button.addEventListener("click", () => {
+      if (audio.paused) {
+        playAmbient().catch(() => {
+          prompt.hidden = false;
+        });
+      } else {
+        audio.pause();
+        prompt.hidden = false;
+      }
+    });
 
     window.addEventListener("load", tryPlaySoon, { once: true });
     document.addEventListener("DOMContentLoaded", tryPlaySoon, { once: true });
